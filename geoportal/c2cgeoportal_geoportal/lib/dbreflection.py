@@ -184,18 +184,21 @@ def get_class(tablename, session=None, exclude_properties=None, primary_key=None
     return cls
 
 
-def _create_class(table, exclude_properties=None):
+def _create_class(table, exclude_properties=None, pk_name=None):
     from c2cgeoportal_commons.models.main import Base
 
     if exclude_properties is None:  # pragma: nocover
         exclude_properties = []
+    attributes = dict(
+        __table__=table,
+        __mapper_args__={"exclude_properties": exclude_properties}
+    )
+    if pk_name is not None:
+        attributes[pk_name] = Column(Integer, primary_key=True)
     cls = type(
         table.name.capitalize(),
         (GeoInterface, Base),
-        dict(
-            __table__=table,
-            __mapper_args__={"exclude_properties": exclude_properties}
-        ),
+        attributes,
     )
 
     for col in table.columns:
